@@ -2,7 +2,7 @@
 # @Author: Chandan Yeshwanth
 # @Date:   2016-04-06 10:08:49
 # @Last Modified by:   Karthik
-# @Last Modified time: 2016-04-06 11:32:59
+# @Last Modified time: 2016-04-06 12:07:50
 
 from __future__ import print_function
 
@@ -18,7 +18,7 @@ from itertools import cycle
 
 
 from scipy.io import wavfile
-# import numpy
+import numpy as np
 # numpy.set_printoptions(threshold=numpy.nan)
 
 
@@ -32,7 +32,7 @@ def get_data_from_wav(filename):
 def main():
 	generated_data = [0 for i in range(10000)]
 	rate, data = get_data_from_wav("../../data/natabhairavi_violin.wav")
-	data = data[1000:5000]
+	data = data[1000:190000]
 	print("Got wav")
 	ds = SequentialDataSet(1, 1)
 	for sample, next_sample in zip(data, cycle(data[1:])):
@@ -44,7 +44,7 @@ def main():
 	trainer = RPropMinusTrainer(net, dataset=ds)
 	train_errors = [] # save errors for plotting later
 	EPOCHS_PER_CYCLE = 5
-	CYCLES = 100
+	CYCLES = 50
 	EPOCHS = EPOCHS_PER_CYCLE * CYCLES
 	for i in xrange(CYCLES):
 	    trainer.trainEpochs(EPOCHS_PER_CYCLE)
@@ -56,13 +56,13 @@ def main():
 	# predict new values
 	old_sample = 100
 
-	for i in xrange(10000):
+	for i in xrange(500000):
 		new_sample = net.activate(old_sample)
 		old_sample = new_sample
-		generated_data[i] = new_sample
+		generated_data[i] = new_sample[0]
 		print(new_sample)
 	
-	wavfile.write("../../output/test.wav",  rate, generated_data)
+	wavfile.write("../../output/test.wav",  rate, np.array(generated_data))
 
 if __name__ == '__main__':
 	main()
