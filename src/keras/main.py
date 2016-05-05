@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 # @Author: Chandan Yeshwanth
 # @Date:   2016-05-01 16:33:49
-# @Last Modified by:   Chandan Yeshwanth
-# @Last Modified time: 2016-05-05 21:30:26
+# @Last Modified by:   Karthik
+# @Last Modified time: 2016-05-06 00:47:56
 
 import audio as aud
 
@@ -11,6 +11,7 @@ import numpy as np
 np.random.seed(1234)
 
 import time
+import sys
 
 from scipy.signal import resample, decimate
 
@@ -18,7 +19,9 @@ from keras.models import Sequential
 from keras.layers.core import Dense, Activation, Dropout
 from keras.layers.recurrent import LSTM
 
-DEFAULT_RATE = 44100
+from keras.models import model_from_json
+
+DEFAULT_RATE = 4000
 
 def roundup(x, up=100):
 	return x if x % up == 0 else x + up - x % up
@@ -35,7 +38,7 @@ def quantize(signal, partitions, codebook):
 		quanta.append(codebook[index])
 	return np.array(quanta)
 
-def get_data_labels(wav_data, seq_len=50, shift=5):
+def get_data_labels(wav_data, seq_len=1000, shift=100):
 	""" create sequences of seq_len with a shift of shift values"""
 
 	new_data = np.copy(wav_data)
@@ -56,7 +59,7 @@ def get_data_labels(wav_data, seq_len=50, shift=5):
 	return X, Y
 
 def main():
-	rate, data = aud.get_wav("violin.wav")
+	rate, data = aud.get_wav("violin_4k.wav")
 	print "Original:", data.size
 
 	new_data = np.copy(data)
@@ -72,7 +75,7 @@ def main():
 	seed_X, seed_Y = get_data_labels(seed_data)
 
 	generated = generate_audio(X, Y, np.array([seed_X[0]]))
-	# aud.save_wav(generated, "violin_gen.wav")
+	aud.save_wav(generated, "violin_gen.wav")
 
 def generate_audio(X, Y, seed_X):
 	"""
@@ -129,7 +132,7 @@ def generate_audio(X, Y, seed_X):
 		print "Saving model ..."
 		json_string = model.to_json()
 		open(model_arch_file, 'w').write(json_string)
-		model.save_weights(model_weight_file)
+		model.save_weights(model_weight_file, overwrite=True)
 
 	# compile model in both cases
 	start = time.time()
@@ -142,22 +145,25 @@ def generate_audio(X, Y, seed_X):
 		# train
 		model.fit(X, Y, 
 			batch_size=32, 
-			nb_epoch=1,
+			nb_epoch=5,
 			validation_split=0.05
 			)
 
 	# generate new sequence
-	generated = []
 	model.reset_states()
+	
+	gen_seconds = 3
+	generated = [None for i in range(DEFAULT_RATE) * gen_seconds]
 
 	# generate 5 seconds of new music
-	for i in xrange(DEFAULT_RATE * 5):
+	print seed_X.shape
+	for i in xrange(DEFAULT_RATE * gen_seconds):
+		sys.stdout.write("\r" + str(float(i)/(DEFAULT_RATE * gen_seconds)))
 		predicted = model.predict(seed_X)[0]
-		print "PREDICTED: ", predicted
-		generated.append(predicted)
-		seed_X = np.append(seed_X[1:], predicted)
+		generated[i] = predicted
+		seed_X[0,:,0] = np.append(seed_X[0,1:,0], predicted)
 	
-	return generated
+	return np.array(generated)
 
 if __name__ == '__main__':
 	main()
