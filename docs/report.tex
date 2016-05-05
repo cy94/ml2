@@ -1,0 +1,27 @@
+% @Author: Chandan Yeshwanth
+% @Date:   2016-05-01 18:06:16
+% @Last Modified by:   Chandan Yeshwanth
+% @Last Modified time: 2016-05-01 18:13:10
+
+\documentclass{article}
+\begin{document}
+
+\title{ML2 Project: Generating Carnatic Music Using Deep Learning Techniques}
+\author{Chandan Yeshwanth \and Karthik S}
+\maketitle
+
+\begin{itemize}
+\item Convert audio to wav (uncompressed format, easy to get samples)
+\item Replace every $x$ seconds with its average
+\item Train and generate using these averaged samples
+\item Expand samples back to original length
+	\begin{itemize}
+		\item Select $x$ such that expanded audio sounds like original
+		\item $x \in (0.0001, 0.0002)$ works
+		\item Gives compression factor 4 - 8
+	\end{itemize} 
+
+
+\end{itemize} 
+
+\end{document}

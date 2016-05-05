@@ -1,8 +1,13 @@
 # -*- coding: utf-8 -*-
 # @Author: Chandan Yeshwanth
 # @Date:   2016-04-06 10:08:49
+<<<<<<< HEAD
+# @Last Modified by:   Karthik
+# @Last Modified time: 2016-04-06 12:07:50
+=======
 # @Last Modified by:   Chandan Yeshwanth
 # @Last Modified time: 2016-04-06 11:59:34
+>>>>>>> 1e46d155145cacb229be306c539bae0aa32cfa18
 
 from __future__ import print_function
 
@@ -19,7 +24,10 @@ from itertools import cycle
 
 from scipy.io import wavfile
 import numpy as np
+<<<<<<< HEAD
+=======
 # import numpy
+>>>>>>> 1e46d155145cacb229be306c539bae0aa32cfa18
 # numpy.set_printoptions(threshold=numpy.nan)
 
 
@@ -45,7 +53,11 @@ def main():
 	trainer = RPropMinusTrainer(net, dataset=ds)
 	train_errors = [] # save errors for plotting later
 	EPOCHS_PER_CYCLE = 5
+<<<<<<< HEAD
+	CYCLES = 50
+=======
 	CYCLES = 10
+>>>>>>> 1e46d155145cacb229be306c539bae0aa32cfa18
 	EPOCHS = EPOCHS_PER_CYCLE * CYCLES
 	for i in xrange(CYCLES):
 	    trainer.trainEpochs(EPOCHS_PER_CYCLE)
@@ -63,7 +75,11 @@ def main():
 		generated_data[i] = new_sample[0]
 		print(new_sample)
 	
+<<<<<<< HEAD
+	wavfile.write("../../output/test.wav",  rate, np.array(generated_data))
+=======
 	wavfile.write("../../output/test.wav", rate, np.array(generated_data))
+>>>>>>> 1e46d155145cacb229be306c539bae0aa32cfa18
 
 if __name__ == '__main__':
 	main()
