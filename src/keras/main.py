@@ -2,7 +2,7 @@
 # @Author: Chandan Yeshwanth
 # @Date:   2016-05-01 16:33:49
 # @Last Modified by:   Chandan Yeshwanth
-# @Last Modified time: 2016-05-05 21:02:12
+# @Last Modified time: 2016-05-05 21:30:26
 
 import audio as aud
 
@@ -84,52 +84,76 @@ def generate_audio(X, Y, seed_X):
 	X = np.reshape(X, (X.shape[0], X.shape[1], 1))
 	seed_X = np.reshape(seed_X, (seed_X.shape[0], seed_X.shape[1], 1))
 
-	model = Sequential()
-	layers = [1, 10, 20, 1]
+	# train new model or use pre trained model?
+	USE_SAVED_MODEL = False
+	model_arch_file = 'model_architecture.json'
+	model_weight_file = 'model_weights.h5'
 
-	# add layers
-	model.add(LSTM(
-            input_dim=layers[0],
-            output_dim=layers[1],
-            return_sequences=True,
-            # stateful=True,
-            # batch_input_shape=(32, 49, 1)
-            ))
-	model.add(Dropout(0.2))
+	print "Architecture file:", model_arch_file
+	print "Weight file:", model_weight_file
 
-	model.add(LSTM(
-            layers[2],
-            return_sequences=False,
-            # stateful=True,
-            # batch_input_shape=(32, 49, 1)
-            ))
-	model.add(Dropout(0.2))
+	model = None
 
-	model.add(Dense(
-            output_dim=layers[3]))
-	model.add(Activation("linear"))
+	if USE_SAVED_MODEL:
+		print "Loading model ..."
+		model = model_from_json(open(model_arch_file).read())
+		model.load_weights(model_weight_file)
+	else:
+		model = Sequential()
+		layers = [1, 10, 20, 1]
 
-	# compile model
+		# add layers
+		model.add(LSTM(
+	            input_dim=layers[0],
+	            output_dim=layers[1],
+	            return_sequences=True,
+	            # stateful=True,
+	            # batch_input_shape=(32, 49, 1)
+	            ))
+		model.add(Dropout(0.2))
+
+		model.add(LSTM(
+	            layers[2],
+	            return_sequences=False,
+	            # stateful=True,
+	            # batch_input_shape=(32, 49, 1)
+	            ))
+		model.add(Dropout(0.2))
+
+		model.add(Dense(
+	            output_dim=layers[3]))
+		model.add(Activation("linear"))
+
+
+		# save model
+		print "Saving model ..."
+		json_string = model.to_json()
+		open(model_arch_file, 'w').write(json_string)
+		model.save_weights(model_weight_file)
+
+	# compile model in both cases
 	start = time.time()
 	print "Started compilation: ", start
 	model.compile(loss="mse", optimizer="rmsprop")
 	print "Compilation Time: ", time.time() - start
 
-	# train
-	model.fit(X, Y, 
-		batch_size=32, 
-		nb_epoch=1,
-		validation_split=0.05
-		)
+	# train if using new model
+	if not USE_SAVED_MODEL:
+		# train
+		model.fit(X, Y, 
+			batch_size=32, 
+			nb_epoch=1,
+			validation_split=0.05
+			)
 
-	# generate
+	# generate new sequence
 	generated = []
 	model.reset_states()
 
 	# generate 5 seconds of new music
 	for i in xrange(DEFAULT_RATE * 5):
 		predicted = model.predict(seed_X)[0]
-		print predicted
+		print "PREDICTED: ", predicted
 		generated.append(predicted)
 		seed_X = np.append(seed_X[1:], predicted)
 	
